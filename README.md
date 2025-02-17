@@ -23,6 +23,7 @@ An intelligent web scraper that uses LLM (Large Language Model) to analyze and s
 ```bash
 git clone <repository-url>
 cd ai_web_scrapper
+````
 
 2. Create and activate a virtual environment:
 ```bash
@@ -32,13 +33,14 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 3. Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt # or pip3 install -r requirements.txt
  ```
 
 ## Configuration
-1. Set up your OpenAI API key:
+1. Install [Ollama](https://ollama.com/)
+2. Pull the Llama3 model using Ollama:
 ```bash
-export OPENAI_API_KEY=your_api_key_here
+ollama pull llama3
  ```
 
 ## Usage
@@ -50,19 +52,26 @@ uvicorn api:app --reload
 The API will be available at http://localhost:8000
 
 ### Running the Scraper
-```python
-from scraper import WebScraper
-from database import Database
 
-# Initialize database
-db = Database()
+Use the command line interface to start the scraper:
 
-# Create scraper instance with keyword
-scraper = WebScraper(db, keyword="budget")
+```bash
+python main.py --url https://example.com --keyword budget --depth 3
+```
+Available options:
 
-# Start crawling
-scraper.crawl("https://example.com", max_depth=3)
+- --url : Target website URL to crawl (required)
+- --keyword : Keyword to analyze content relevance (required)
+- --depth : Maximum crawling depth (default: 3)
+- --workers : Number of concurrent workers (default: 50)
+  
+Example:
+```bash
+# Crawl a city website looking for budget-related content
+python main.py --url https://www.bozeman.net --keyword budget --depth 2 --workers 30
  ```
+
+Note: Make sure Ollama is running before starting the scraper.
 
 ## API Endpoints
 ### Get Links
@@ -76,7 +85,6 @@ Example:
 ```bash
 curl "http://localhost:8000/links?keyword=budget&type=document&min_relevance=0.7"
  ```
-```
 
 ## Database Schema
 The SQLite database ( links.db ) contains a single table with the following structure:
