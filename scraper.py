@@ -118,12 +118,12 @@ class WebScraper:
             return
 
     def determine_link_type(self, text: str) -> str:
-        lower_text = text.lower()
-        if "contact" in lower_text or "director" in lower_text or "email" in lower_text:
-            return "contact"
-        if any(term in lower_text for term in ["acfr", "budget", "report", "file"]):
-            return "document"
-        return "unknown"
+        try:
+            from llm_processor import classify_link_type
+            return classify_link_type(text)
+        except Exception as e:
+            logger.error(f"Error in link type determination: {e}")
+            return "unknown"
 
     def is_internal(self, url: str, base_domain: str) -> bool:
         parsed_url = urlparse(url)

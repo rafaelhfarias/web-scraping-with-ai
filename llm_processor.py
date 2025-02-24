@@ -4,6 +4,8 @@ import logging
 from langchain_ollama import OllamaLLM
 
 ollama_llm = OllamaLLM(model="llama3")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def get_relevance_score(text: str, keyword: str) -> float:
     """
@@ -30,7 +32,7 @@ def get_relevance_score(text: str, keyword: str) -> float:
     )
     try:
         response = ollama_llm.invoke(prompt).strip()
-        logging.info(f"LLM response: {response}")
+        logger.info(f"LLM response: {response}")
         
         # Extract the first number found in the response
         match = re.search(r"(\d+(?:\.\d+)?)", response)
@@ -41,6 +43,30 @@ def get_relevance_score(text: str, keyword: str) -> float:
         else:
             score = 0.0
     except Exception as e:
-        logging.error(f"Error obtaining LLM score: {e}")
+        logger.error(f"Error obtaining LLM score: {e}")
         score = 0.0
     return score
+
+def classify_link_type(text: str) -> str:
+    prompt = f"""Analyze this link text and classify it into one of these categories:
+    - document: for files, reports, budgets, policies, forms
+    - contact: for contact information, staff directories, departments
+    - service: for public services, applications, permits
+    - news: for news, announcements, updates
+    - unknown: if none of the above apply
+    
+    Link text: "{text}"
+    
+    Return only the category name, nothing else."""
+
+    try:
+        response = ollama_llm.invoke(prompt).strip()
+        logger.info(f"Link classification response: {response}")
+        
+        category = response.strip().lower()
+        if category in ['document', 'contact', 'service', 'news', 'unknown']:
+            return category
+        return 'unknown'
+    except Exception as e:
+        logger.error(f"Error classifying link type: {e}")
+        return 'unknown'
